@@ -101,18 +101,35 @@ Skipped:
 
 ## 🧪 Testing PawPal+
 
-```bash
-# Run the full test suite:
-pytest
+With the virtual environment activated (`source .venv/bin/activate`), run the full suite from the project root:
 
-# Run with coverage:
-pytest --cov
+```bash
+python -m pytest
 ```
+
+On macOS, `python` only exists inside the activated `.venv`. Without activating it, run `.venv/bin/python -m pytest`.
+
+The 36 tests in `tests/test_pawpal.py` cover the behaviors that matter most to a pet owner, with both normal cases and edge cases:
+
+- **Sorting:** tasks come back in chronological order with untimed tasks last, ties keep their order, and a 00:00 task sorts first. Planning order is required → priority → category (meds, feeding, walk) → shortest.
+- **Fitting the time budget:** required tasks are always kept, even over budget, with a warning. Higher-priority tasks get time first, the budget can be filled exactly, tasks over the owner's length limit are skipped, and a 0-minute budget keeps only required tasks.
+- **Start times:** preferred times are honored. Flexible tasks fill the gaps, and two tasks at the same time are placed one after the other with a "moved" warning. Tasks that would start after midnight are skipped with a reason.
+- **Recurring tasks:** completing a daily task creates one due the next day, and a weekly task creates one due 7 days later. This works across month, year and leap-day boundaries. Missed tasks stay due, and completing a task twice makes no duplicate.
+- **Conflict detection:** duplicate and overlapping times are flagged for the same pet and across pets. Back-to-back tasks aren't flagged, and bad data gives a warning instead of a crash.
+- **Empty states and saving:** an owner with no pets, a pet with no tasks, or all tasks done gives an empty plan. Saving to JSON and loading back gives the same data.
 
 Sample test output:
 
 ```
-# Paste your pytest output here
+============================= test session starts ==============================
+platform darwin -- Python 3.14.8, pytest-9.1.1, pluggy-1.7.0
+configfile: pytest.ini
+testpaths: tests
+collected 36 items
+
+tests/test_pawpal.py ....................................                [100%]
+
+============================== 36 passed in 0.02s ==============================
 ```
 
 ## 📐 Smarter Scheduling

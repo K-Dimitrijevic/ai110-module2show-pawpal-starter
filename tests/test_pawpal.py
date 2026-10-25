@@ -273,3 +273,220 @@ def test_conflict_warnings_warn_instead_of_crashing_on_bad_data():
     for warnings in (_focus_warnings(owner, broken), Scheduler(owner).conflict_warnings(rex.tasks)):
         [warning] = warnings
         assert warning.startswith("Couldn't check tasks for time conflicts")
+
+
+def _plan_owner(available_minutes=60, day_start=time(8, 0), **kwargs):
+    owner = Owner("Jordan", available_minutes=available_minutes, day_start=day_start, **kwargs)
+    rex = Pet("Rex", "dog")
+    owner.add_pet(rex)
+    return owner, rex
+
+
+def _fit(owner, tasks):
+    scheduler = Scheduler(owner)
+    return scheduler.fit_to_time(scheduler.sort_by_priority(tasks))
+
+
+def test_sort_by_time_keeps_ties_in_order_and_puts_midnight_first():
+    walk_a = Task("Walk A", "walk", 30, preferred_time=time(7, 0))
+    walk_b = Task("Walk B", "walk", 30, preferred_time=time(7, 0))
+    night_meds = Task("Night meds", "meds", 5, preferred_time=time(0, 0))
+    puzzle = Task("Puzzle", "enrichment", 15)
+    scheduler = Scheduler(Owner("Jordan"))
+
+    assert scheduler.sort_by_time([walk_a, puzzle, walk_b, night_meds]) == [night_meds, walk_a, walk_b, puzzle]
+    assert scheduler.sort_by_time([walk_b, walk_a]) == [walk_b, walk_a]
+    assert scheduler.sort_by_time([]) == []
+
+
+def test_sort_by_priority_breaks_ties_by_category_then_shortest():
+    walk = Task("Walk", "walk", 10)
+    feed = Task("Feed", "feeding", 10)
+    meds = Task("Meds", "meds", 10)
+    long_groom = Task("Long groom", "grooming", 15)
+    short_groom = Task("Short groom", "grooming", 5)
+
+    ordered = Scheduler(Owner("Jordan")).sort_by_priority([walk, feed, meds, long_groom, short_groom])
+
+    assert ordered == [meds, feed, walk, short_groom, long_groom]
+
+
+def test_fit_to_time_keeps_required_tasks_over_budget():
+    owner, rex = _plan_owner(available_minutes=30)
+    meds = Task("Meds", "meds", 20, is_required=True)
+    vet = Task("Vet visit", "other", 40, is_required=True)
+    walk = Task("Walk", "walk", 10)
+    for task in (walk, meds, vet):
+        rex.add_task(task)
+
+    chosen, skipped = _fit(owner, rex.tasks)
+
+    assert chosen == [meds, vet]
+    assert skipped == [(walk, "needs 10 min, only 0 min left")]
+    plan = Scheduler(owner).generate_plan(date(2026, 10, 25))
+    assert "Required tasks need 60 min but only 30 min are available." in plan.warnings
+
+
+def test_fit_to_time_gives_time_to_higher_priority_first():
+    owner, _ = _plan_owner(available_minutes=30)
+    puzzle = Task("Puzzle", "enrichment", 20, Priority.LOW)
+    walk = Task("Walk", "walk", 20, Priority.HIGH)
+
+    chosen, skipped = _fit(owner, [puzzle, walk])
+
+    assert chosen == [walk]
+    assert skipped == [(puzzle, "needs 20 min, only 10 min left")]
+
+
+def test_fit_to_time_keeps_filling_after_a_skip_up_to_exact_budget():
+    owner, _ = _plan_owner(available_minutes=30)
+    walk = Task("Walk", "walk", 25, Priority.HIGH)
+    grooming = Task("Grooming", "grooming", 20)
+    treat = Task("Treat", "feeding", 5, Priority.LOW)
+
+    chosen, skipped = _fit(owner, [grooming, treat, walk])
+
+    assert chosen == [walk, treat]  # 25 + 5 fills the 30 min exactly
+    assert skipped == [(grooming, "needs 20 min, only 5 min left")]
+
+
+def test_fit_to_time_skips_long_tasks_unless_required():
+    owner, _ = _plan_owner(available_minutes=200, max_task_minutes=30)
+    long_walk = Task("Long walk", "walk", 60, Priority.HIGH)
+    vet = Task("Vet visit", "other", 45, is_required=True)
+    breakfast = Task("Breakfast", "feeding", 10)
+
+    chosen, skipped = _fit(owner, [long_walk, vet, breakfast])
+
+    assert chosen == [vet, breakfast]
+    assert skipped == [(long_walk, "longer than your 30-minute task limit")]
+
+
+def test_fit_to_time_with_zero_budget_keeps_only_required():
+    owner, _ = _plan_owner(available_minutes=0)
+    meds = Task("Meds", "meds", 5, is_required=True)
+    walk = Task("Walk", "walk", 10)
+
+    chosen, skipped = _fit(owner, [walk, meds])
+
+    assert chosen == [meds]
+    assert skipped == [(walk, "needs 10 min, only 0 min left")]
+
+
+def test_assign_times_honors_preferred_time_and_fills_gap_before_it():
+    owner, _ = _plan_owner()
+    walk = Task("Walk", "walk", 30)
+    meds = Task("Meds", "meds", 5, preferred_time=time(9, 0))
+
+    assert Scheduler(owner).assign_times([walk, meds]) == [(time(8, 0), walk), (time(9, 0), meds)]
+
+
+def test_assign_times_puts_flexible_task_after_fixed_when_gap_is_too_small():
+    owner, _ = _plan_owner()
+    walk = Task("Walk", "walk", 30)
+    meds = Task("Meds", "meds", 5, preferred_time=time(8, 20))
+
+    assert Scheduler(owner).assign_times([walk, meds]) == [(time(8, 20), meds), (time(8, 25), walk)]
+
+
+def test_assign_times_keeps_flexible_tasks_in_priority_order():
+    # A shorter, lower-priority task could fill the 30-min gap, but flexible
+    # tasks are placed strictly in the order given, so it waits its turn.
+    owner, _ = _plan_owner()
+    walk = Task("Walk", "walk", 60, Priority.HIGH)
+    treat = Task("Treat", "feeding", 10, Priority.LOW)
+    meds = Task("Meds", "meds", 5, preferred_time=time(8, 30))
+
+    assert Scheduler(owner).assign_times([walk, treat, meds]) == [
+        (time(8, 30), meds),
+        (time(8, 35), walk),
+        (time(9, 35), treat),
+    ]
+
+
+def test_assign_times_moves_task_preferred_before_day_start():
+    owner, _ = _plan_owner()
+    meds = Task("Meds", "meds", 5, preferred_time=time(7, 0))
+
+    assert Scheduler(owner).assign_times([meds]) == [(time(8, 0), meds)]
+
+
+def test_generate_plan_shifts_second_task_with_same_preferred_time():
+    owner, rex = _plan_owner()
+    meds = Task("Meds", "meds", 5, preferred_time=time(8, 30))
+    breakfast = Task("Breakfast", "feeding", 10, preferred_time=time(8, 30))
+    rex.add_task(breakfast)
+    rex.add_task(meds)
+
+    plan = Scheduler(owner).generate_plan(date(2026, 10, 25))
+
+    assert plan.scheduled == [(time(8, 30), meds), (time(8, 35), breakfast)]
+    assert plan.reasons[breakfast.id] == "medium priority, as close to 08:30 as possible"
+    assert "Rex: Breakfast (10 min, medium) moved from preferred 08:30 to 08:35." in plan.warnings
+
+
+def test_generate_plan_drops_tasks_that_would_start_after_midnight():
+    owner, rex = _plan_owner(available_minutes=200, day_start=time(23, 0))
+    walk = Task("Evening walk", "walk", 50, Priority.HIGH)
+    dinner = Task("Dinner", "feeding", 20)
+    treat = Task("Treat", "feeding", 5, Priority.LOW)
+    brushing = Task("Brushing", "grooming", 10, Priority.LOW)
+    for task in (brushing, treat, dinner, walk):
+        rex.add_task(task)
+
+    plan = Scheduler(owner).generate_plan(date(2026, 10, 25))
+
+    assert plan.scheduled == [(time(23, 0), walk), (time(23, 50), dinner)]
+    assert plan.skipped == [(treat, "no time left in the day"), (brushing, "no time left in the day")]
+    assert "Rex: Dinner (20 min, medium) runs past midnight." in plan.warnings
+
+
+def test_generate_plan_is_empty_without_due_tasks():
+    day = date(2026, 10, 25)
+    no_pets = Owner("Jordan", available_minutes=60)
+    no_tasks, _ = _plan_owner()
+    all_done, rex = _plan_owner()
+    walk = Task("Walk", "walk", 30)
+    rex.add_task(walk)
+    walk.mark_complete(day)
+
+    for owner in (no_pets, no_tasks, all_done):
+        plan = Scheduler(owner).generate_plan(day)
+        assert (plan.scheduled, plan.skipped, plan.warnings) == ([], [], [])
+    assert Scheduler(no_pets).assign_times([]) == []
+
+
+def test_next_occurrence_crosses_month_year_and_leap_day():
+    daily = Task("Walk", "walk", 30)
+    weekly = Task("Brushing", "grooming", 15, frequency="weekly")
+
+    assert daily.next_occurrence(date(2026, 12, 31)).due_date == date(2027, 1, 1)
+    assert weekly.next_occurrence(date(2028, 2, 25)).due_date == date(2028, 3, 3)  # leap year
+    assert weekly.next_occurrence(date(2027, 2, 25)).due_date == date(2027, 3, 4)
+
+
+def test_late_completion_counts_next_due_date_from_completion_day():
+    mia = Pet("Mia", "cat")
+    brushing = Task("Brushing", "grooming", 15, frequency="weekly", is_required=True, due_date=date(2026, 10, 1))
+    mia.add_task(brushing)
+    assert brushing.is_due_today(date(2026, 10, 10))  # missed, still due
+
+    next_brushing = brushing.mark_complete(date(2026, 10, 10))
+
+    assert next_brushing.due_date == date(2026, 10, 17)
+    assert next_brushing.is_required
+
+
+def test_find_time_conflicts_flags_duplicate_times_for_same_pet():
+    owner, rex, _ = _conflict_owner()
+    meds = Task("Meds", "meds", 5, preferred_time=time(8, 0))
+    breakfast = Task("Breakfast", "feeding", 10, preferred_time=time(8, 0))
+    walk = Task("Walk", "walk", 30, preferred_time=time(8, 0))
+    for task in (walk, breakfast, meds):
+        rex.add_task(task)
+    scheduler = Scheduler(owner)
+
+    assert scheduler.find_time_conflicts(rex.tasks) == [(meds, breakfast), (meds, walk), (breakfast, walk)]
+    warnings = scheduler.conflict_warnings(rex.tasks)
+    assert len(warnings) == 3
+    assert all("same pet (Rex)" in w for w in warnings)
