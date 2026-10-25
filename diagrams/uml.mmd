@@ -1,15 +1,87 @@
 classDiagram
-    %% Replace the placeholders below with your actual classes, attributes, methods, and relationships.
     %% Keep this file updated so it matches your final implementation.
 
-    class ClassName {
-        +type attribute
-        +method() returnType
+    class Priority {
+        <<enumeration>>
+        LOW = 1
+        MEDIUM = 2
+        HIGH = 3
     }
 
-    class AnotherClass {
-        +type attribute
-        +method() returnType
+    class Owner {
+        +str name
+        +int available_minutes
+        +time day_start
+        +int max_task_minutes
+        +list~Pet~ pets
+        +add_pet(pet: Pet) None
+        +remove_pet(pet: Pet) None
+        +set_availability(minutes: int, day_start: time) None
+        +get_all_tasks() list~Task~
     }
 
-    ClassName --> AnotherClass : relationship
+    class Pet {
+        +str name
+        +str species
+        +int age
+        +list~str~ special_needs
+        +list~Task~ tasks
+        +add_task(task: Task) None
+        +remove_task(task: Task) None
+        +get_task(task_id: str) Task
+        +edit_task(task_id: str, **changes) None
+        +get_pending_tasks(day: date) list~Task~
+        +summary() str
+    }
+
+    class Task {
+        +str title
+        +str category
+        +int duration_minutes
+        +Priority priority
+        +str frequency
+        +time preferred_time
+        +bool is_required
+        +date last_completed
+        +str id
+        +Pet pet
+        +mark_complete(day: date) None
+        +reset() None
+        +is_completed(day: date) bool
+        +is_due_today(day: date) bool
+        +priority_score() int
+        +__str__() str
+    }
+
+    class Scheduler {
+        +Owner owner
+        +str strategy
+        +collect_tasks(day: date) list~Task~
+        +sort_by_priority(tasks) list~Task~
+        +fit_to_time(tasks) tuple
+        +assign_times(tasks) list
+        +detect_conflicts(slots) list~str~
+        +generate_plan(day: date) DailyPlan
+    }
+
+    class DailyPlan {
+        +date plan_date
+        +list scheduled
+        +list skipped
+        +int total_minutes_used
+        +list~str~ explanations
+        +list~str~ warnings
+        +dict reasons
+        +add_entry(task: Task, start_time: time, reason: str) None
+        +skip(task: Task, reason: str) None
+        +explain() str
+        +to_table() list~dict~
+    }
+
+    Owner "1" o-- "*" Pet : owns
+    Pet "1" *-- "*" Task : has
+    Task --> Priority : uses
+    Scheduler --> Owner : plans for
+    Scheduler ..> Task : schedules
+    Scheduler ..> DailyPlan : creates
+    DailyPlan "1" o-- "*" Task : contains

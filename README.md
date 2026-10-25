@@ -42,6 +42,28 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
+## 🛠️ Implementation Summary
+
+The scheduling logic lives in `pawpal_system.py`, with a terminal demo in `main.py` (`python main.py`) and tests in `tests/`. The class diagram is in `diagrams/uml.mmd`.
+
+| Class | Responsibility |
+|-------|----------------|
+| `Task` | One care activity: title, category, duration, `Priority` (low/medium/high), frequency (daily/weekly), optional preferred time, whether it's required, and when it was last completed. Knows whether it is due on a given day and gives a priority score for sorting. |
+| `Pet` | A pet's details and its list of tasks. Adding a task links the task back to the pet. |
+| `Owner` | The owner's constraints (available minutes, when the day starts, longest task they'll accept) and their pets. `get_all_tasks()` returns every pet's tasks in one list. |
+| `Scheduler` | Builds the plan. Gets its tasks only through `Owner.get_all_tasks()`, so it works across all pets. |
+| `DailyPlan` | The result: scheduled tasks with start times, skipped tasks with reasons, warnings, and a readable explanation. `to_table()` returns rows for display. |
+
+**How the classes work together:** `Scheduler.generate_plan(day)` runs five steps, each taking the previous step's output:
+
+1. **Collect:** tasks due today, from all pets, via `owner.get_all_tasks()`.
+2. **Sort:** required tasks first, then by priority score, then shortest first.
+3. **Fit:** keep tasks while time remains. Required tasks are always kept, and anything longer than the owner's task limit is skipped.
+4. **Assign times:** start at the owner's `day_start`, place tasks with a preferred time at that time (or as soon after as possible), and fill gaps with flexible tasks.
+5. **Check:** warn about an over-budget plan, moved preferred times, overlaps, or tasks running past midnight.
+
+Every scheduled or skipped task is recorded in the `DailyPlan` with a plain-language reason, which is how the app explains its choices.
+
 ## 🖥️ Sample Output
 
 Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
@@ -53,6 +75,29 @@ Paste a sample of your app's CLI or Streamlit output here so a reader can see wh
 #   09:00 — Feeding (10 min) [priority: high]
 #   ...
 ```
+
+```
+============================================================
+Today's Schedule for Jordan - Sunday, October 25, 2026
+============================================================
+Pets:
+  - Rex (dog, 4 yr) - 4 task(s)
+  - Mia (cat, 9 yr) - 3 task(s); needs: senior, thyroid condition
+
+Time   Pet   Task             Min  Priority Why
+------------------------------------------------------------
+07:00  Rex   Breakfast         10  high     required, at your preferred time
+07:10  Mia   Puzzle feeder     15  low      low priority, fits in your available time
+07:30  Rex   Morning walk      30  high     high priority, at your preferred time
+08:00  Mia   Thyroid meds       5  high     required, at your preferred time
+08:05  Mia   Brushing          15  low      low priority, fits in your available time
+18:00  Rex   Evening walk      30  medium   medium priority, at your preferred time
+------------------------------------------------------------
+Total: 105 of 120 available minutes
+
+Skipped:
+  - Rex: Long hike (60 min, medium): longer than your 45-minute task limit 
+  ```
 
 ## 🧪 Testing PawPal+
 
