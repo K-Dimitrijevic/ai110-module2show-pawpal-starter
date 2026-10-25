@@ -40,6 +40,12 @@ I updated the UML diagram to match.
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+My scheduler warns about time conflicts instead of deciding which task wins. `find_time_conflicts()` checks whether two tasks' preferred time windows overlap (start time plus duration), not just whether they start at exactly the same time. So a 5-minute supplement at 07:45 is flagged against a 07:30–08:00 walk. When it finds a clash, it keeps both tasks, places one right after the other, and adds a warning to the plan, such as "Time conflict, same pet (Mia): Thyroid meds at 08:00-08:05 overlaps Eye drops at 08:00-08:05." It doesn't drop either task or decide which one matters more. If a task has bad data, `conflict_warnings()` returns a warning instead of crashing the program.
+
+This is reasonable because the owner knows things the code doesn't. Two pets can often be fed at the same time, but a dog can't be walked while getting eye drops. Automatically removing a task could mean skipping meds, which is worse than the plan running a few minutes late. The cost is that the owner has to read the warnings and decide, and when a task gets pushed back it can push the tasks after it back too (Thyroid meds moved from 08:00 to 08:05).
+
+I also chose readability over speed in how conflicts are found. The scheduler compares every pair of timed tasks using one overlap rule (`_overlaps()`: A starts before B ends and B starts before A ends), instead of a faster but harder-to-follow sweep. That takes more comparisons as the task list grows, but an owner has around 5–30 tasks a day, so it's still instant and much easier to read and test.
+
 ---
 
 ## 3. AI Collaboration

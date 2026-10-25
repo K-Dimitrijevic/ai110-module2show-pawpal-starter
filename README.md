@@ -60,7 +60,7 @@ The scheduling logic lives in `pawpal_system.py`, with a terminal demo in `main.
 2. **Sort:** required tasks first, then by priority score, then shortest first.
 3. **Fit:** keep tasks while time remains. Required tasks are always kept, and anything longer than the owner's task limit is skipped.
 4. **Assign times:** start at the owner's `day_start`, place tasks with a preferred time at that time (or as soon after as possible), and fill gaps with flexible tasks.
-5. **Check:** warn about an over-budget plan, moved preferred times, overlaps, or tasks running past midnight.
+5. **Check:** warn about overlapping preferred times, an over-budget plan, moved preferred times, or tasks running past midnight.
 
 Every scheduled or skipped task is recorded in the `DailyPlan` with a plain-language reason, which is how the app explains its choices.
 
@@ -117,14 +117,12 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()`, `Scheduler.sort_by_priority()` | By preferred time, earliest first; untimed tasks go last, highest priority first. Planning order is required → priority score → shortest. |
+| Filtering | `Scheduler.filter_tasks()`, `Scheduler.fit_to_time()` | Filter by pet name (any case) and/or completed status on a day. When planning, tasks are skipped with a reason if time runs out or they exceed the owner's task limit. |
+| Conflict handling | `Scheduler.find_time_conflicts()`, `Scheduler.conflict_warnings()` | Flags overlapping preferred time windows (not just same start time), for the same pet or different pets. Warns instead of crashing; `focus=task` checks one newly added task. |
+| Recurring tasks | `Task.mark_complete()`, `Task.next_occurrence()`, `Task.is_due_today()` | Completing a daily/weekly task adds its next occurrence to the pet, due in 1 or 7 days. Missed tasks stay due; completing twice adds no duplicate. |
 
 ## 📸 Demo Walkthrough
 
