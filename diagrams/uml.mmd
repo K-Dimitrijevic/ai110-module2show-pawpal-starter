@@ -6,6 +6,7 @@ classDiagram
         LOW = 1
         MEDIUM = 2
         HIGH = 3
+        +parse(value)$ Priority
     }
 
     class Owner {
@@ -18,6 +19,10 @@ classDiagram
         +remove_pet(pet: Pet) None
         +set_availability(minutes: int, day_start: time) None
         +get_all_tasks() list~Task~
+        +to_dict() dict
+        +from_dict(data: dict)$ Owner
+        +save(path) None
+        +load(path)$ Owner
     }
 
     class Pet {
@@ -32,6 +37,8 @@ classDiagram
         +edit_task(task_id: str, **changes) None
         +get_pending_tasks(day: date) list~Task~
         +summary() str
+        +to_dict() dict
+        +from_dict(data: dict)$ Pet
     }
 
     class Task {
@@ -43,14 +50,18 @@ classDiagram
         +time preferred_time
         +bool is_required
         +date last_completed
+        +date due_date
         +str id
         +Pet pet
-        +mark_complete(day: date) None
+        +mark_complete(day: date) Task
+        +next_occurrence(completed_on: date) Task
         +reset() None
         +is_completed(day: date) bool
         +is_due_today(day: date) bool
         +priority_score() int
-        +__str__() str
+        +#95;#95;str#95;#95;() str
+        +to_dict() dict
+        +from_dict(data: dict)$ Task
     }
 
     class Scheduler {
@@ -58,8 +69,12 @@ classDiagram
         +str strategy
         +collect_tasks(day: date) list~Task~
         +sort_by_priority(tasks) list~Task~
+        +sort_by_time(tasks) list~Task~
+        +filter_tasks(pet_name, completed, day) list~Task~
         +fit_to_time(tasks) tuple
-        +assign_times(tasks) list
+        +assign_times(tasks) list~tuple~
+        +find_time_conflicts(tasks) list~tuple~
+        +conflict_warnings(tasks, focus: Task) list~str~
         +detect_conflicts(slots) list~str~
         +generate_plan(day: date) DailyPlan
     }
@@ -78,10 +93,14 @@ classDiagram
         +to_table() list~dict~
     }
 
+    note for Scheduler "generate_plan: collect_tasks → sort_by_priority → fit_to_time → assign_times → conflict_warnings + detect_conflicts"
+
     Owner "1" o-- "*" Pet : owns
     Pet "1" *-- "*" Task : has
+    Task "*" --> "1" Pet : pet
+    Task ..> Task : next_occurrence creates
     Task --> Priority : uses
     Scheduler --> Owner : plans for
-    Scheduler ..> Task : schedules
+    Scheduler ..> Task : sorts, filters, schedules
     Scheduler ..> DailyPlan : creates
     DailyPlan "1" o-- "*" Task : contains

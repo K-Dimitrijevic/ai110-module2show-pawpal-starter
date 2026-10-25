@@ -10,6 +10,18 @@ CATEGORIES = ["walk", "feeding", "meds", "enrichment", "grooming", "other"]
 # is also saved to this file and reloaded at the start of each new session.
 DATA_FILE = Path(__file__).parent / "pawpal_data.json"
 
+CONFLICT_PREFIXES = ("Time conflict", "Couldn't check tasks for time conflicts")
+
+
+def _task_status(task: Task, day: date) -> str:
+    """Describe where a task stands on the given day, e.g. 'due today' or 'done Oct 24'."""
+    if task.last_completed is not None:
+        return "✅ done" if task.last_completed == day else f"done {task.last_completed:%b %d}"
+    if task.is_due_today(day):
+        return "due today"
+    return f"due {task.due_date:%b %d}"
+
+
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
 # Streamlit reruns this script on every interaction, so the Owner (with its pets
@@ -110,28 +122,81 @@ else:
                     is_required,
                 )
                 pet.add_task(task)
-                st.success(f"Added '{title.strip()}' for {pet.name}.")
                 scheduler = Scheduler(owner)
-                for warning in scheduler.conflict_warnings(scheduler.collect_tasks(date.today()), focus=task):
-                    st.warning(warning)
+                clashes = scheduler.conflict_warnings(scheduler.collect_tasks(date.today()), focus=task)
+                if clashes:
+                    st.warning(
+                        f"Added '{task.title}' for {pet.name}, but it overlaps {len(clashes)} other "
+                        "task(s). See **Time conflicts** below."
+                    )
+                else:
+                    st.success(f"Added '{task.title}' for {pet.name}.")
 
-    tasks = owner.get_all_tasks()
+    today = date.today()
+    scheduler = Scheduler(owner)
+
+    # Check every task due today (not just a new one) so a conflict stays visible until it's fixed.
+    conflicts = scheduler.conflict_warnings(scheduler.collect_tasks(today))
+    if conflicts:
+        st.warning(
+            f"**Time conflicts ({len(conflicts)})**: these tasks want overlapping time. "
+            "The schedule will shift the later one; change a preferred time to keep both on time.\n\n"
+            + "\n".join(f"- {warning}" for warning in conflicts)
+        )
+
+    due_today = scheduler.collect_tasks(today)
+    if due_today:
+        with st.form("complete_task"):
+            col1, col2 = st.columns([3, 1], vertical_alignment="bottom")
+            with col1:
+                labels = {t.id: str(t) for t in scheduler.sort_by_time(due_today)}
+                done_id = st.selectbox("Mark a task done", list(labels), format_func=labels.get)
+            with col2:
+                if st.form_submit_button("Mark done"):
+                    done = next(t for t in due_today if t.id == done_id)
+                    next_task = done.mark_complete(today)
+                    st.session_state.completed_message = (
+                        f"Marked '{done.title}' done. Next one is due {next_task.due_date:%A, %B %d}."
+                    )
+                    st.rerun()
+    if "completed_message" in st.session_state:
+        st.success(st.session_state.pop("completed_message"))
+
+    col1, col2 = st.columns(2)
+    with col1:
+        pet_filter = st.selectbox("Show pet", ["All pets"] + [p.name for p in owner.pets])
+    with col2:
+        status_filter = st.selectbox("Show tasks", ["Due today", "Done today", "All"])
+
+    tasks = scheduler.filter_tasks(
+        pet_name=None if pet_filter == "All pets" else pet_filter,
+        completed={"Due today": False, "Done today": True, "All": None}[status_filter],
+        day=today,
+    )
+    if status_filter == "Due today":
+        tasks = [t for t in tasks if t.is_due_today(today)]
+
     if tasks:
         st.table(
             [
                 {
-                    "pet": t.pet.name,
-                    "task": t.title,
-                    "category": t.category,
-                    "minutes": t.duration_minutes,
-                    "priority": t.priority.name.lower(),
-                    "frequency": t.frequency,
-                    "preferred": f"{t.preferred_time:%H:%M}" if t.preferred_time else "",
-                    "required": "yes" if t.is_required else "",
+                    "Time": f"{t.preferred_time:%H:%M}" if t.preferred_time else "flexible",
+                    "Pet": t.pet.name,
+                    "Task": t.title,
+                    "Category": t.category,
+                    "Minutes": t.duration_minutes,
+                    "Priority": t.priority.name.lower(),
+                    "Repeats": t.frequency,
+                    "Required": "yes" if t.is_required else "",
+                    "Status": _task_status(t, today),
                 }
-                for t in tasks
-            ]
+                for t in scheduler.sort_by_time(tasks)
+            ],
+            hide_index=True,
         )
+        st.caption("Sorted by preferred time. Flexible tasks are listed last, highest priority first.")
+    elif owner.get_all_tasks():
+        st.info("No tasks match these filters.")
     else:
         st.info("No tasks yet. Add one above.")
 
@@ -155,19 +220,54 @@ if plan is not None:
     scheduled = [r for r in rows if r["status"] == "scheduled"]
     skipped = [r for r in rows if r["status"] == "skipped"]
 
-    st.markdown(
-        f"**{len(scheduled)} task(s), {plan.total_minutes_used} of "
-        f"{owner.available_minutes} minutes** for {plan.plan_date:%A, %B %d}"
-    )
+    conflicts = [w for w in plan.warnings if w.startswith(CONFLICT_PREFIXES)]
+    moved = [w for w in plan.warnings if "moved from preferred" in w]
+    other_warnings = [w for w in plan.warnings if w not in conflicts and w not in moved]
+
+    st.markdown(f"**{plan.plan_date:%A, %B %d}**")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Scheduled", len(scheduled), border=True)
+    col2.metric("Minutes used", f"{plan.total_minutes_used} / {owner.available_minutes}", border=True)
+    col3.metric("Skipped", len(skipped), border=True)
+
+    if scheduled and not plan.warnings and not skipped:
+        st.success("Everything fits: no conflicts, and every task is at its preferred time.")
+    elif scheduled and not plan.warnings:
+        st.success("No conflicts in today's plan.")
+    if conflicts:
+        st.warning(
+            "**Time conflicts**: these tasks want overlapping time, so the later one was "
+            "shifted. Change a preferred time if both need to happen on time.\n\n"
+            + "\n".join(f"- {warning}" for warning in conflicts)
+        )
+    for warning in other_warnings:
+        st.warning(warning)
+
     if scheduled:
-        st.table([{k: r[k] for k in ("time", "pet", "task", "minutes", "priority", "why")} for r in scheduled])
+        st.table(
+            [
+                {
+                    "Time": r["time"],
+                    "Pet": r["pet"],
+                    "Task": r["task"],
+                    "Minutes": r["minutes"],
+                    "Priority": r["priority"],
+                    "Why": r["why"],
+                }
+                for r in scheduled
+            ],
+            hide_index=True,
+        )
     else:
         st.info("Nothing could be scheduled. Try adding more available minutes.")
+    if moved:
+        st.info("**Moved tasks**\n\n" + "\n".join(f"- {warning}" for warning in moved))
     if skipped:
         st.markdown("**Skipped**")
-        st.table([{k: r[k] for k in ("pet", "task", "minutes", "why")} for r in skipped])
-    for warning in plan.warnings:
-        st.warning(warning)
+        st.table(
+            [{"Pet": r["pet"], "Task": r["task"], "Minutes": r["minutes"], "Why": r["why"]} for r in skipped],
+            hide_index=True,
+        )
     with st.expander("Full explanation"):
         st.text(plan.explain())
     st.caption("Changed something? Click Generate schedule again to update the plan.")

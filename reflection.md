@@ -7,7 +7,7 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
-I included a `Task` class, which is for activites that one might do with their pet. A `Pet` class which is the particular animak being cared for, an `Owner` which is obviously the person who shapes the associated plan and a `Scheduler` which houses all the decision-making and collects all the tasks given by an Owner.
+I included a `Task` class, which is for activities that one might do with their pet. A `Pet` class which is the particular animal being cared for, an `Owner` which is obviously the person who shapes the associated plan and a `Scheduler` which houses all the decision-making and collects all the tasks given by an Owner.
 
 **b. Design changes**
 
@@ -24,7 +24,7 @@ Yes. Before writing any scheduling logic, I reviewed the class skeleton and foun
 - **Safer values:** Priority is now a `Priority` enum (LOW/MEDIUM/HIGH) instead of free text, and `preferred_time` is a real `time` object. This prevents typos and makes times comparable.
 - **Smaller fixes:** I renamed `DailyPlan.date` to `plan_date` because it had the same name as the `date` type. I set `Pet` and `Owner` to compare by identity (`eq=False`), so `remove_pet()` can't remove the wrong pet when two have the same details.
 
-I updated the UML diagram to match.
+Later on, recurring tasks added a `due_date` and a `next_occurrence()` method to `Task`, and the scheduler picked up sorting, filtering and conflict-checking methods. I updated the UML diagram to match (`diagrams/uml_final.mmd`).
 
 ---
 
@@ -34,6 +34,17 @@ I updated the UML diagram to match.
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
+
+The scheduler looks at:
+
+- whether a task is required
+- its priority
+- how many minutes the owner has
+- the longest task the owner is willing to do
+- what time the day starts
+- any preferred time a task has
+
+I ranked them by what would hurt the pet most if it got missed. Required tasks like meds come first and always get scheduled, even if that goes over the time budget. A late or skipped walk isn't great, but missed meds can actually be a problem. After that comes priority, then the time budget. Preferred times come last: the scheduler tries to hit them, but it will push a task back a few minutes rather than drop it.
 
 **b. Tradeoffs**
 
@@ -59,11 +70,11 @@ I used Claude Code at each stage of the project:
 
 - **Design brainstorming:** I proposed the five classes (`Owner`, `Pet`, `Task`, `Scheduler`, `DailyPlan`) with their attributes and methods, and had Claude turn them into a Mermaid class diagram.
 - **Skeleton:** I then had it turn the UML into Python class stubs, using dataclasses for the data classes and checked to make sure everything was coherent.
-
 - **Design review:** I asked it to review its own skeleton for missing relationships and logic bottlenecks. Of which, it found eight issues, and I asked it to make the changes and summarize them.
-- **Implementation:** it implemented all the methods, built `main.py` as a terminal testing ground, wrote the first tests, and added docstrings and then I tested accordingly
+- **Implementation:** it implemented all the methods, built `main.py` as a terminal testing ground, wrote the first tests, and added docstrings and then I tested accordingly.
+- **Testing, UI and docs:** I asked it which edge cases mattered most, then had it write the tests, hook the scheduler's sorting, filtering and conflict warnings into the Streamlit app, and update the UML and README to match the final code.
 
-The most helpful prompts were the ones that asked it to check work rather than just produce it. Some examples are `assign_times()` which had nowhere to store its result, and a yes/no `completed` flag couldn't handle weekly tasks.
+The most helpful prompts were the ones that asked it to check work rather than just produce it. Some examples are `assign_times()` which had nowhere to store its result, and a yes/no `completed` flag couldn't handle weekly tasks. Asking "does this project meet the rubric?" was also useful, because it caught things I'd missed, like the UML being out of date and the README showing old output.
 
 **b. Judgment and verification**
 
@@ -75,7 +86,26 @@ I didn't accept the initial skeleton. I had it review first for any issues which
 To verify the results:
 
 - **Terminal run:** I had it create `main.py` and run it. The schedule mixed tasks from both pets, kept the 07:00, 07:30, 08:00 and 18:00 preferred times, and skipped the 60-minute hike with the reason "longer than your 45-minute task limit".
-- **Unit tests:** I asked for pytest tests that check `mark_complete()` changes a task's status and `add_task()` increases a pet's task count. Both pass.
+- **Unit tests:** I started with two tests (`mark_complete()` changes a task's status, and `add_task()` increases a pet's task count). The suite is now 36 tests, and they all pass.
+- **The app itself:** after the UI changes, the app was run with sample data to check that the filters, the "Mark done" button and the conflict warnings actually showed up the way they should.
+
+**c. AI strategy**
+
+*Which AI coding assistant features were most effective for building your scheduler?*
+
+The most useful thing was that Claude could run the code when needed. It ran `main.py` and pytest after each change, so I saw the real output instead of taking its word that something worked and hoping it didn't hallucinate. It was also good at reading the whole project at once. When I asked for edge cases, it pointed to specific lines in `pawpal_system.py`, like the `break` in `assign_times()` that drops every task after midnight instead of giving me a generic list and forcing me to spend an hour or so evaluating myself.
+
+*Give one example of an AI suggestion you rejected or modified to keep your system design clean.*
+
+The first skeleton gave `Owner` an open-ended `preferences` dictionary and gave `Task` a simple `completed` true/false flag. Both looked flexible, but they would have made the scheduler messier. With a dictionary, the scheduler has to guess which keys exist. A true/false flag can't tell you whether a weekly task is due again. I had it swap the dictionary for two real fields, `day_start` and `max_task_minutes`, and replace the flag with a `last_completed` date. That one change is what made recurring tasks possible later without adding special cases.
+
+*How did using separate chat sessions for different phases help you stay organized?*
+
+I kept design and the class skeleton in one chat, and scheduling logic, testing, UI and docs in others as described in the steps. Each chat stayed focused on one job so the AI wouldn't mix old design ideas into my new code. It also forced me to restate where the project was at the start of each phase. When a new chat started, it read the current files instead of relying on an older plan that might be out of date.
+
+*Summarize what you learned about being the "lead architect" when collaborating with powerful AI tools.*
+
+The AI can write a lot of correct-looking code very efficiently, so my job was a lot of peer-reviewing in truth. I had to know what the system was supposed to do, ask it to review its own work, and start from scratch when the AI result wasn't what i desired. Some decisions it couldn't make for me. One example is whether a weekly task done late should count its next due date from when it was done or when it was due. The AI could point the question out, but the answer depends on what I'd think a pet owner would expect. I also learned to verify everything by running it, since the AI explains its mistakes just as confidently as its correct answers, which can be really unhelpful.
 
 ---
 
@@ -86,10 +116,29 @@ To verify the results:
 - What behaviors did you test?
 - Why were these tests important?
 
+I tested the things a pet owner would notice if they broke:
+
+- **Sorting:** tasks come out in time order with untimed tasks last.
+- **Required tasks:** they're never dropped, even when there isn't enough time.
+- **Priority:** higher-priority tasks get the time first when the budget is tight.
+- **Preferred times:** they're honored, or the task is pushed back if something's in the way.
+- **Recurrence:** daily and weekly tasks come back on the right day, including across months, years and leap days.
+- **Conflicts:** they're flagged for the same pet and across different pets.
+
+I also tested empty cases, like an owner with no pets or a pet with no tasks, so the app doesn't crash on a fresh start. These matter because a wrong schedule could mean a pet misses meds or a meal, and that's the one thing this app can't get wrong.
+
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
 - What edge cases would you test next if you had more time?
+
+About a 4 out of 5. All 36 tests pass and the demo output looks right, but there are a few cases I know behave in a way I haven't fully decided on:
+
+- **Overlaps across midnight:** a task at 23:50 that runs 30 minutes isn't flagged against one at 00:05.
+- **Short tasks waiting behind long ones:** a short flexible task waits behind a long one, even if it could fit in an earlier gap.
+- **Late completions:** a weekly task done late counts its next due date from the day it was done.
+
+I'd test and decide on those next.
 
 ---
 
@@ -99,10 +148,16 @@ To verify the results:
 
 - What part of this project are you most satisfied with?
 
+I'm happiest with how the scheduler is split into small steps (collect, sort, fit, assign times, check). Each step takes a list and returns a result, so I could test each one by itself, and adding conflict warnings later didn't mean rewriting anything. I also like that every scheduled or skipped task comes with a plain reason, so the plan explains itself.
+
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
 
+I'd make flexible tasks smarter about filling gaps, so a short task can slot in before a fixed one even if a longer task is ahead of it in priority. I'd also add a way to edit and delete tasks in the app (the `edit_task()` method exists but the UI doesn't use it yet), and clean up old completed copies of recurring tasks so the "All" list doesn't keep growing.
+
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
+Getting the design right early saves a lot of work later. The changes I made after the skeleton review, like the `last_completed` date and the scheduler steps passing results to each other, are the reason features like recurring tasks and conflict warnings worked cleanly. Including AI in the workflow made that even more the case. It builds whatever design you give it, so the design has to be a good one which ultimately depends on my, the 'lead architect' so to speak.
