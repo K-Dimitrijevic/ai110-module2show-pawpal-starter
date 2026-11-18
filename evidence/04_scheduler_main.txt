@@ -1,0 +1,149 @@
+$ .venv/bin/python main.py
+# date: 2026-11-18 00:03 CST | Python 3.14.8 | no API key (pre-listed answers)
+
+============================================================
+Today's Schedule for Jordan - Wednesday, November 18, 2026
+============================================================
+Pets:
+  - Rex (dog, 4 yr) - 5 task(s)
+  - Mia (cat, 9 yr) - 5 task(s); needs: senior, thyroid condition
+
+Time   Pet   Task             Min  Priority Why
+------------------------------------------------------------
+07:00  Mia   Breakfast          5  high     required, at your preferred time
+07:05  Rex   Breakfast         10  high     required, as close to 07:00 as possible
+07:15  Mia   Puzzle feeder     15  low      low priority, fits in your available time
+07:30  Rex   Morning walk      30  high     high priority, at your preferred time
+08:00  Rex   Joint supplement   5  high     high priority, as close to 07:45 as possible
+08:05  Mia   Thyroid meds       5  high     required, as close to 08:00 as possible
+08:10  Mia   Eye drops          5  high     high priority, as close to 08:00 as possible
+08:15  Mia   Brushing          15  low      low priority, fits in your available time
+18:00  Rex   Evening walk      30  medium   medium priority, at your preferred time
+------------------------------------------------------------
+Total: 120 of 120 available minutes
+
+Skipped:
+  - Rex: Long hike (60 min, medium): longer than your 45-minute task limit
+
+Warnings:
+  ! Time conflict, different pets: Mia: Breakfast (5 min, high) at 07:00-07:05 overlaps Rex: Breakfast (10 min, high) at 07:00-07:10.
+  ! Time conflict, same pet (Rex): Rex: Morning walk (30 min, high) at 07:30-08:00 overlaps Rex: Joint supplement (5 min, high) at 07:45-07:50.
+  ! Time conflict, same pet (Mia): Mia: Thyroid meds (5 min, high) at 08:00-08:05 overlaps Mia: Eye drops (5 min, high) at 08:00-08:05.
+  ! Rex: Breakfast (10 min, high) moved from preferred 07:00 to 07:05.
+  ! Rex: Joint supplement (5 min, high) moved from preferred 07:45 to 08:00.
+  ! Mia: Thyroid meds (5 min, high) moved from preferred 08:00 to 08:05.
+  ! Mia: Eye drops (5 min, high) moved from preferred 08:00 to 08:10.
+
+============================================================
+Same-Time Conflict Check
+============================================================
+  07:00  Rex: Breakfast (10 min, high)  <->  Mia: Breakfast (5 min, high)
+  08:00  Mia: Thyroid meds (5 min, high)  <->  Mia: Eye drops (5 min, high)
+  ! Time conflict, different pets: Rex: Breakfast (10 min, high) at 07:00-07:10 overlaps Mia: Breakfast (5 min, high) at 07:00-07:05.
+  ! Time conflict, same pet (Rex): Rex: Morning walk (30 min, high) at 07:30-08:00 overlaps Rex: Joint supplement (5 min, high) at 07:45-07:50.
+  ! Time conflict, same pet (Mia): Mia: Thyroid meds (5 min, high) at 08:00-08:05 overlaps Mia: Eye drops (5 min, high) at 08:00-08:05.
+
+Expected same-time pairs found: PASS
+
+============================================================
+Sorting & Filtering Demo
+============================================================
+
+All tasks (insertion order):
+  18:00  Rex: Evening walk (30 min, medium)
+  --:--  Rex: Long hike (60 min, medium)
+  07:30  Rex: Morning walk (30 min, high)
+  07:00  Rex: Breakfast (10 min, high)
+  07:45  Rex: Joint supplement (5 min, high)
+  --:--  Mia: Puzzle feeder (15 min, low)
+  08:00  Mia: Thyroid meds (5 min, high)
+  --:--  Mia: Brushing (15 min, low)
+  07:00  Mia: Breakfast (5 min, high)
+  08:00  Mia: Eye drops (5 min, high)
+
+Sorted by time (untimed last, by priority):
+  07:00  Rex: Breakfast (10 min, high)
+  07:00  Mia: Breakfast (5 min, high)
+  07:30  Rex: Morning walk (30 min, high)
+  07:45  Rex: Joint supplement (5 min, high)
+  08:00  Mia: Thyroid meds (5 min, high)
+  08:00  Mia: Eye drops (5 min, high)
+  18:00  Rex: Evening walk (30 min, medium)
+  --:--  Rex: Long hike (60 min, medium)
+  --:--  Mia: Puzzle feeder (15 min, low)
+  --:--  Mia: Brushing (15 min, low)
+
+After completing Breakfast and Thyroid meds (all tasks):
+  18:00  Rex: Evening walk (30 min, medium)
+  --:--  Rex: Long hike (60 min, medium)
+  07:30  Rex: Morning walk (30 min, high)
+  07:00  Rex: Breakfast (10 min, high)
+  07:45  Rex: Joint supplement (5 min, high)
+  07:00  Rex: Breakfast (10 min, high)  [next occurrence, due Thu Nov 19]
+  --:--  Mia: Puzzle feeder (15 min, low)
+  08:00  Mia: Thyroid meds (5 min, high)
+  --:--  Mia: Brushing (15 min, low)
+  07:00  Mia: Breakfast (5 min, high)
+  08:00  Mia: Eye drops (5 min, high)
+  08:00  Mia: Thyroid meds (5 min, high)  [next occurrence, due Thu Nov 19]
+  07:00  Mia: Breakfast (5 min, high)  [next occurrence, due Thu Nov 19]
+
+Due today (Scheduler.collect_tasks):
+  07:30  Rex: Morning walk (30 min, high)
+  07:45  Rex: Joint supplement (5 min, high)
+  08:00  Mia: Eye drops (5 min, high)
+  18:00  Rex: Evening walk (30 min, medium)
+  --:--  Rex: Long hike (60 min, medium)
+  --:--  Mia: Puzzle feeder (15 min, low)
+  --:--  Mia: Brushing (15 min, low)
+
+Filter: pet_name='Rex'
+  18:00  Rex: Evening walk (30 min, medium)
+  --:--  Rex: Long hike (60 min, medium)
+  07:30  Rex: Morning walk (30 min, high)
+  07:00  Rex: Breakfast (10 min, high)
+  07:45  Rex: Joint supplement (5 min, high)
+  07:00  Rex: Breakfast (10 min, high)  [next occurrence, due Thu Nov 19]
+
+Filter: pet_name='mia' (case-insensitive)
+  --:--  Mia: Puzzle feeder (15 min, low)
+  08:00  Mia: Thyroid meds (5 min, high)
+  --:--  Mia: Brushing (15 min, low)
+  07:00  Mia: Breakfast (5 min, high)
+  08:00  Mia: Eye drops (5 min, high)
+  08:00  Mia: Thyroid meds (5 min, high)  [next occurrence, due Thu Nov 19]
+  07:00  Mia: Breakfast (5 min, high)  [next occurrence, due Thu Nov 19]
+
+Filter: completed=True
+  07:00  Rex: Breakfast (10 min, high)
+  08:00  Mia: Thyroid meds (5 min, high)
+  07:00  Mia: Breakfast (5 min, high)
+
+Filter: completed=False, sorted by time
+  07:00  Rex: Breakfast (10 min, high)  [next occurrence, due Thu Nov 19]
+  07:00  Mia: Breakfast (5 min, high)  [next occurrence, due Thu Nov 19]
+  07:30  Rex: Morning walk (30 min, high)
+  07:45  Rex: Joint supplement (5 min, high)
+  08:00  Mia: Thyroid meds (5 min, high)  [next occurrence, due Thu Nov 19]
+  08:00  Mia: Eye drops (5 min, high)
+  18:00  Rex: Evening walk (30 min, medium)
+  --:--  Rex: Long hike (60 min, medium)
+  --:--  Mia: Puzzle feeder (15 min, low)
+  --:--  Mia: Brushing (15 min, low)
+
+Filter: pet_name='Rex', completed=False
+  18:00  Rex: Evening walk (30 min, medium)
+  --:--  Rex: Long hike (60 min, medium)
+  07:30  Rex: Morning walk (30 min, high)
+  07:45  Rex: Joint supplement (5 min, high)
+  07:00  Rex: Breakfast (10 min, high)  [next occurrence, due Thu Nov 19]
+
+============================================================
+Lightweight Conflict Check (warns, never crashes)
+============================================================
+Added Rex: Vet call (20 min, medium): 
+  ! Time conflict, same pet (Rex): Rex: Evening walk (30 min, medium) at 18:00-18:30 overlaps Rex: Vet call (20 min, medium) at 18:15-18:35.
+Added Rex: Nail trim (10 min, medium): no conflicts
+Added Rex: Broken entry (10 min, medium): 
+  ! Couldn't check tasks for time conflicts ('<' not supported between instances of 'str' and 'datetime.time'); review preferred times.
+Program still running.

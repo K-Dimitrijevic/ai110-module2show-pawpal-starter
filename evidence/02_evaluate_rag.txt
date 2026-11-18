@@ -1,0 +1,42 @@
+$ .venv/bin/python evaluate_rag.py
+# date: 2026-11-18 00:03 CST | Python 3.14.8 | no API key (pre-listed answers)
+
+Retrieval (expected guide in top 3)
+  PASS  Senior cat, thyroid                expected cat_thyroid.md, got ['cat_thyroid.md', 'cat_senior.md', 'cat_thyroid.md']
+  PASS  Diabetic cat                       expected cat_diabetes.md, got ['cat_general.md', 'cat_diabetes.md', 'cat_diabetes.md']
+  PASS  Arthritic senior dog               expected dog_senior.md, got ['dog_senior.md', 'dog_senior.md', 'dog_senior.md']
+  PASS  Puppy                              expected dog_puppy.md, got ['dog_puppy.md', 'dog_puppy.md', 'dog_puppy.md']
+  PASS  Diabetic dog                       expected dog_diabetes.md, got ['dog_diabetes.md', 'dog_general.md', 'dog_general.md']
+  PASS  Rabbit                             expected rabbit_care.md, got ['rabbit_care.md', 'rabbit_care.md', 'rabbit_care.md']
+  PASS  Healthy adult dog, full routine    expected dog_general.md, got ['dog_general.md', 'dog_general.md', 'dog_senior.md']
+  PASS  Healthy adult cat                  expected cat_general.md, got ['cat_general.md', 'cat_general.md', 'cat_general.md']
+
+Care Advisor: pre-listed answers (27 in knowledge/answers.json), 2 run(s) per case
+  Senior cat, thyroid                ['Thyroid medication', 'Weekly weigh-in', 'Gentle play session', 'Gentle brushing']
+  Senior cat, thyroid                ['Thyroid medication', 'Weekly weigh-in', 'Gentle play session', 'Gentle brushing']
+  Diabetic cat                       ['Insulin (morning)', 'Insulin (evening)', 'Log water and appetite', 'Brushing']
+  Diabetic cat                       ['Insulin (morning)', 'Insulin (evening)', 'Log water and appetite', 'Brushing']
+  Arthritic senior dog               ['Joint supplement', 'Short gentle walk', 'Gentle stretching', 'Dinner']
+  Arthritic senior dog               ['Joint supplement', 'Short gentle walk', 'Gentle stretching', 'Dinner']
+  Puppy                              ['Potty break', 'Midday meal', 'Puppy training', 'Brushing']
+  Puppy                              ['Potty break', 'Midday meal', 'Puppy training', 'Brushing']
+  Diabetic dog                       ['Insulin (morning)', 'Insulin (evening)', 'Dinner', 'Evening walk']
+  Diabetic dog                       ['Insulin (morning)', 'Insulin (evening)', 'Dinner', 'Evening walk']
+  Rabbit                             ['Refill hay and water', 'Leafy greens', 'Supervised playtime', 'Spot-clean litter area']
+  Rabbit                             ['Refill hay and water', 'Leafy greens', 'Supervised playtime', 'Spot-clean litter area']
+  Healthy adult dog, full routine    ['Tooth brushing']
+  Healthy adult dog, full routine    ['Tooth brushing']
+  Healthy adult cat                  ['Play session', 'Brushing', 'Scoop litter box', 'Tooth brushing']
+  Healthy adult cat                  ['Play session', 'Brushing', 'Scoop litter box', 'Tooth brushing']
+
+Summary
+  Retrieval hit rate:         8/8 (100%)
+  Suggestion source:          pre-listed answers (27 in knowledge/answers.json)
+  Expected task suggested:    100%
+  Meds hallucination rate:    0% (healthy pets given meds)
+  Guardrail pass rate:        100% (0 rejected)
+  Average confidence:         0.76
+  Consistent across runs:     8/8 cases
+  Errors:                     0/16 runs
+
+Saved to logs/eval_results.json

@@ -1,0 +1,98 @@
+$ .venv/bin/python demo_rag.py
+# date: 2026-11-18 00:03 CST | Python 3.14.8 | no API key (pre-listed answers)
+
+2026-11-18 00:03:56,794 WARNING pawpal.rag: Rejected suggestion for Mia: Breakfast: duplicates an existing task
+2026-11-18 00:03:56,795 WARNING pawpal.rag: Rejected suggestion for Mia: Daily vitamin injection: cites unknown source 'vitamins.md#injections'
+2026-11-18 00:03:56,795 WARNING pawpal.rag: Rejected suggestion for Mia: Weekly weigh-in: duration 0 min is out of range
+Suggestion source: pre-listed answers (27 in knowledge/answers.json)
+
+Schedule BEFORE suggestions:
+  07:00  Mia: Breakfast (5 min, high)
+  07:15  Rex: Breakfast (10 min, high)
+  07:30  Rex: Morning walk (40 min, high)
+  08:10  Mia: Puzzle feeder (15 min, low)
+
+======================================================================
+Pet: Mia (cat, 11 yr, needs: senior, thyroid condition)
+Query: cat senior senior senior thyroid condition thyroid condition thyroid condition Breakfast feeding Puzzle feeder enrichment daily care exercise feeding
+Retrieved guide sections:
+  - cat_thyroid.md > Thyroid medication
+  - cat_senior.md > When a cat is senior
+  - cat_thyroid.md > Vet follow-up
+  - cat_general.md > Play and enrichment
+  - cat_senior.md > Grooming help for senior cats
+Suggestions (from pre-listed answers):
+  + Thyroid medication (meds, 5 min, high, daily, required)
+      why: Thyroid medication is given daily at consistent times and should never be skipped.
+      source: cat_thyroid.md > Thyroid medication  (confidence 0.90)
+  + Weekly weigh-in (other, 5 min, medium, weekly)
+      why: Weigh senior and hyperthyroid cats weekly; weight loss can be an early sign of illness.
+      source: cat_thyroid.md > Weight and appetite monitoring  (confidence 0.90)
+  + Gentle brushing (grooming, 10 min, low, weekly)
+      why: Senior cats groom themselves less well, so gentle brushing 2 to 3 times a week helps.
+      source: cat_senior.md > Grooming help for senior cats  (confidence 0.75)
+  + Gentle play session (enrichment, 10 min, medium, daily)
+      why: Senior cats still need daily activity: short, gentle play sessions of 5 to 10 minutes.
+      source: cat_senior.md > Gentle play for senior cats  (confidence 0.75)
+
+======================================================================
+Pet: Rex (dog, 10 yr, needs: arthritis)
+Query: dog senior senior senior arthritis arthritis arthritis Breakfast feeding Morning walk walk daily care exercise feeding
+Retrieved guide sections:
+  - dog_senior.md > Exercise for senior dogs
+  - dog_senior.md > Senior feeding
+  - dog_senior.md > Health checks
+  - dog_senior.md > Arthritis and joint care
+  - dog_general.md > Daily exercise
+Suggestions (from pre-listed answers):
+  + Joint supplement (meds, 5 min, high, daily)
+      why: Dogs with arthritis often get a vet-approved joint supplement daily with a meal.
+      source: dog_senior.md > Arthritis and joint care  (confidence 0.90)
+  + Short gentle walk (walk, 15 min, medium, daily)
+      why: Senior or stiff dogs do better with two or three short, gentle walks than one long one.
+      source: dog_senior.md > Exercise for senior dogs  (confidence 0.90)
+  + Gentle stretching (enrichment, 10 min, medium, daily)
+      why: Gentle range-of-motion stretching for 5 to 10 minutes can help stiff joints.
+      source: dog_senior.md > Arthritis and joint care  (confidence 0.90)
+  + Dinner (feeding, 10 min, high, daily at 18:30, required)
+      why: Adult dogs should eat twice a day at consistent times, 8 to 12 hours apart.
+      source: dog_general.md > Feeding schedule  (confidence 0.75)
+
+======================================================================
+
+Schedule AFTER accepting suggestions:
+  07:00  Mia: Breakfast (5 min, high)
+  07:05  Mia: Thyroid medication (5 min, high)
+  07:10  Rex: Joint supplement (5 min, high)
+  07:15  Rex: Breakfast (10 min, high)
+  07:30  Rex: Morning walk (40 min, high)
+  08:10  Rex: Short gentle walk (15 min, medium)
+  08:25  Mia: Weekly weigh-in (5 min, medium)
+  08:30  Mia: Gentle play session (10 min, medium)
+  08:40  Rex: Gentle stretching (10 min, medium)
+  18:30  Rex: Dinner (10 min, high)
+  skipped Mia: Gentle brushing (10 min, low): needs 10 min, only 5 min left
+  skipped Mia: Puzzle feeder (15 min, low): needs 15 min, only 5 min left
+
+======================================================================
+Explanation, with sources (from pre-listed answers):
+Plan for Tuesday, November 17: 10 task(s), 115 min. 7 of them come from the care guides, with the source shown.
+- **07:00 Mia: Breakfast (5 min, high)**: Required, at your preferred time
+- **07:05 Mia: Thyroid medication (5 min, high)**: Thyroid medication is given daily at consistent times and should never be skipped. (required, fits in your available time) _[cat_thyroid.md > Thyroid medication]_
+- **07:10 Rex: Joint supplement (5 min, high)**: Dogs with arthritis often get a vet-approved joint supplement daily with a meal. (high priority, fits in your available time) _[dog_senior.md > Arthritis and joint care]_
+- **07:15 Rex: Breakfast (10 min, high)**: Required, at your preferred time
+- **07:30 Rex: Morning walk (40 min, high)**: High priority, at your preferred time
+- **08:10 Rex: Short gentle walk (15 min, medium)**: Senior or stiff dogs do better with two or three short, gentle walks than one long one. (medium priority, fits in your available time) _[dog_senior.md > Exercise for senior dogs]_
+- **08:25 Mia: Weekly weigh-in (5 min, medium)**: Weigh senior and hyperthyroid cats weekly; weight loss can be an early sign of illness. (medium priority, fits in your available time) _[cat_thyroid.md > Weight and appetite monitoring]_
+- **08:30 Mia: Gentle play session (10 min, medium)**: Senior cats still need daily activity: short, gentle play sessions of 5 to 10 minutes. (medium priority, fits in your available time) _[cat_senior.md > Gentle play for senior cats]_
+- **08:40 Rex: Gentle stretching (10 min, medium)**: Gentle range-of-motion stretching for 5 to 10 minutes can help stiff joints. (medium priority, fits in your available time) _[dog_senior.md > Arthritis and joint care]_
+- **18:30 Rex: Dinner (10 min, high)**: Adult dogs should eat twice a day at consistent times, 8 to 12 hours apart. (required, at your preferred time) _[dog_general.md > Feeding schedule]_
+- **Skipped Mia: Gentle brushing (10 min, low)**: Needs 10 min, only 5 min left
+- **Skipped Mia: Puzzle feeder (15 min, low)**: Needs 15 min, only 5 min left
+
+======================================================================
+Guardrail check: 1 good + 3 bad suggestions for Mia (no AI needed)
+  accepted: ['Thyroid meds']
+  rejected: Breakfast: duplicates an existing task
+  rejected: Daily vitamin injection: cites unknown source 'vitamins.md#injections'
+  rejected: Weekly weigh-in: duration 0 min is out of range

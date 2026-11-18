@@ -1,0 +1,26 @@
+%% PawPal+ RAG system diagram
+flowchart TD
+    U(["👤 Pet owner"]) -- "pet profile + tasks" --> RET
+    KB[("Pet-care guides<br/>knowledge/*.md")] --> RET
+    ANS[("Pre-listed answers<br/>knowledge/answers.json")] --> ADV
+
+    RET["Retriever<br/>finds relevant guide sections"] --> ADV
+    ADV["Care Advisor<br/>matches pre-listed answers<br/>(or Claude, optional)"] --> VAL
+    VAL{"Validator<br/>valid suggestion?"} -- "yes" --> REVIEW
+    REVIEW{"👤 Owner review<br/>accept or reject"} -- "accepted" --> SCHED
+    SCHED["Scheduler<br/>builds daily plan"] --> EXP
+    EXP["Plan Explainer<br/>explains plan with citations"] --> OUT
+    OUT(["Daily plan + explanation"]) --> U
+
+    VAL -- "no" --> LOG[["Logger"]]
+    TESTS[["🧪 pytest + evaluate_rag.py"]] -.-> RET
+    TESTS -.-> ADV
+    TESTS -.-> VAL
+    TESTS -.-> SCHED
+
+    classDef human fill:#fde68a,stroke:#b45309,color:#111
+    classDef ai fill:#c7d2fe,stroke:#4338ca,color:#111
+    classDef check fill:#bbf7d0,stroke:#15803d,color:#111
+    class U,REVIEW human
+    class ADV,EXP ai
+    class VAL,TESTS,LOG check

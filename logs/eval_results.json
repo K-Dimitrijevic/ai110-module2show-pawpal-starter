@@ -1,0 +1,453 @@
+{
+  "date": "2026-11-18T00:03:56",
+  "retrieval": {
+    "k": 3,
+    "hits": 8,
+    "total": 8,
+    "hit_rate": 1.0,
+    "cases": [
+      {
+        "case": "Senior cat, thyroid",
+        "expected": "cat_thyroid.md",
+        "hit": true,
+        "top": [
+          "cat_thyroid.md",
+          "cat_senior.md",
+          "cat_thyroid.md"
+        ]
+      },
+      {
+        "case": "Diabetic cat",
+        "expected": "cat_diabetes.md",
+        "hit": true,
+        "top": [
+          "cat_general.md",
+          "cat_diabetes.md",
+          "cat_diabetes.md"
+        ]
+      },
+      {
+        "case": "Arthritic senior dog",
+        "expected": "dog_senior.md",
+        "hit": true,
+        "top": [
+          "dog_senior.md",
+          "dog_senior.md",
+          "dog_senior.md"
+        ]
+      },
+      {
+        "case": "Puppy",
+        "expected": "dog_puppy.md",
+        "hit": true,
+        "top": [
+          "dog_puppy.md",
+          "dog_puppy.md",
+          "dog_puppy.md"
+        ]
+      },
+      {
+        "case": "Diabetic dog",
+        "expected": "dog_diabetes.md",
+        "hit": true,
+        "top": [
+          "dog_diabetes.md",
+          "dog_general.md",
+          "dog_general.md"
+        ]
+      },
+      {
+        "case": "Rabbit",
+        "expected": "rabbit_care.md",
+        "hit": true,
+        "top": [
+          "rabbit_care.md",
+          "rabbit_care.md",
+          "rabbit_care.md"
+        ]
+      },
+      {
+        "case": "Healthy adult dog, full routine",
+        "expected": "dog_general.md",
+        "hit": true,
+        "top": [
+          "dog_general.md",
+          "dog_general.md",
+          "dog_senior.md"
+        ]
+      },
+      {
+        "case": "Healthy adult cat",
+        "expected": "cat_general.md",
+        "hit": true,
+        "top": [
+          "cat_general.md",
+          "cat_general.md",
+          "cat_general.md"
+        ]
+      }
+    ]
+  },
+  "source": "pre-listed answers (27 in knowledge/answers.json)",
+  "advisor": {
+    "runs": 16,
+    "errors": 0,
+    "expected_task_rate": 1.0,
+    "meds_hallucination_rate": 0.0,
+    "guardrail_pass_rate": 1.0,
+    "rejected_total": 0,
+    "avg_confidence": 0.7603448275862069,
+    "consistent_cases": 8,
+    "total_cases": 8,
+    "cases": [
+      {
+        "case": "Senior cat, thyroid",
+        "runs": [
+          {
+            "titles": [
+              "Thyroid medication",
+              "Weekly weigh-in",
+              "Gentle play session",
+              "Gentle brushing"
+            ],
+            "confidences": [
+              0.9,
+              0.9,
+              0.75,
+              0.75
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          },
+          {
+            "titles": [
+              "Thyroid medication",
+              "Weekly weigh-in",
+              "Gentle play session",
+              "Gentle brushing"
+            ],
+            "confidences": [
+              0.9,
+              0.9,
+              0.75,
+              0.75
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          }
+        ]
+      },
+      {
+        "case": "Diabetic cat",
+        "runs": [
+          {
+            "titles": [
+              "Insulin (morning)",
+              "Insulin (evening)",
+              "Log water and appetite",
+              "Brushing"
+            ],
+            "confidences": [
+              0.9,
+              0.9,
+              0.9,
+              0.75
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          },
+          {
+            "titles": [
+              "Insulin (morning)",
+              "Insulin (evening)",
+              "Log water and appetite",
+              "Brushing"
+            ],
+            "confidences": [
+              0.9,
+              0.9,
+              0.9,
+              0.75
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          }
+        ]
+      },
+      {
+        "case": "Arthritic senior dog",
+        "runs": [
+          {
+            "titles": [
+              "Joint supplement",
+              "Short gentle walk",
+              "Gentle stretching",
+              "Dinner"
+            ],
+            "confidences": [
+              0.9,
+              0.9,
+              0.9,
+              0.75
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          },
+          {
+            "titles": [
+              "Joint supplement",
+              "Short gentle walk",
+              "Gentle stretching",
+              "Dinner"
+            ],
+            "confidences": [
+              0.9,
+              0.9,
+              0.9,
+              0.75
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          }
+        ]
+      },
+      {
+        "case": "Puppy",
+        "runs": [
+          {
+            "titles": [
+              "Potty break",
+              "Midday meal",
+              "Puppy training",
+              "Brushing"
+            ],
+            "confidences": [
+              0.75,
+              0.75,
+              0.75,
+              0.6
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          },
+          {
+            "titles": [
+              "Potty break",
+              "Midday meal",
+              "Puppy training",
+              "Brushing"
+            ],
+            "confidences": [
+              0.75,
+              0.75,
+              0.75,
+              0.6
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          }
+        ]
+      },
+      {
+        "case": "Diabetic dog",
+        "runs": [
+          {
+            "titles": [
+              "Insulin (morning)",
+              "Insulin (evening)",
+              "Dinner",
+              "Evening walk"
+            ],
+            "confidences": [
+              0.9,
+              0.9,
+              0.75,
+              0.75
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          },
+          {
+            "titles": [
+              "Insulin (morning)",
+              "Insulin (evening)",
+              "Dinner",
+              "Evening walk"
+            ],
+            "confidences": [
+              0.9,
+              0.9,
+              0.75,
+              0.75
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          }
+        ]
+      },
+      {
+        "case": "Rabbit",
+        "runs": [
+          {
+            "titles": [
+              "Refill hay and water",
+              "Leafy greens",
+              "Supervised playtime",
+              "Spot-clean litter area"
+            ],
+            "confidences": [
+              0.6,
+              0.6,
+              0.6,
+              0.6
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          },
+          {
+            "titles": [
+              "Refill hay and water",
+              "Leafy greens",
+              "Supervised playtime",
+              "Spot-clean litter area"
+            ],
+            "confidences": [
+              0.6,
+              0.6,
+              0.6,
+              0.6
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          }
+        ]
+      },
+      {
+        "case": "Healthy adult dog, full routine",
+        "runs": [
+          {
+            "titles": [
+              "Tooth brushing"
+            ],
+            "confidences": [
+              0.6
+            ],
+            "expected_hit": null,
+            "meds_hallucination": false,
+            "raw": 1,
+            "kept": 1,
+            "rejected": [],
+            "error": null
+          },
+          {
+            "titles": [
+              "Tooth brushing"
+            ],
+            "confidences": [
+              0.6
+            ],
+            "expected_hit": null,
+            "meds_hallucination": false,
+            "raw": 1,
+            "kept": 1,
+            "rejected": [],
+            "error": null
+          }
+        ]
+      },
+      {
+        "case": "Healthy adult cat",
+        "runs": [
+          {
+            "titles": [
+              "Play session",
+              "Brushing",
+              "Scoop litter box",
+              "Tooth brushing"
+            ],
+            "confidences": [
+              0.75,
+              0.75,
+              0.6,
+              0.6
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          },
+          {
+            "titles": [
+              "Play session",
+              "Brushing",
+              "Scoop litter box",
+              "Tooth brushing"
+            ],
+            "confidences": [
+              0.75,
+              0.75,
+              0.6,
+              0.6
+            ],
+            "expected_hit": true,
+            "meds_hallucination": false,
+            "raw": 4,
+            "kept": 4,
+            "rejected": [],
+            "error": null
+          }
+        ]
+      }
+    ]
+  }
+}

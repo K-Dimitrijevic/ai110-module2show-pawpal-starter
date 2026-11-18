@@ -1,0 +1,44 @@
+2026-11-17 22:31:21,611 INFO pawpal.rag: Loaded 41 chunks from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge
+2026-11-17 22:31:22,089 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 22:31:36,226 INFO pawpal.rag: Loaded 41 chunks from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge
+2026-11-17 22:31:45,773 INFO pawpal.rag: Loaded 41 chunks from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge
+2026-11-17 22:31:45,825 INFO pawpal.rag: Retrieved for 'cat adult adult thyroid condition thyroid condition thyroid condition daily care exercise feeding' (species=cat): ['cat_thyroid.md#thyroid-medication (13.55)', 'cat_thyroid.md#vet-follow-up (10.71)', 'cat_general.md#feeding-cats (8.98)', 'cat_general.md#grooming-cats (6.13)', 'cat_general.md#litter-box-care (6.09)']
+2026-11-17 22:31:45,825 INFO pawpal.rag: Advisor returned 1 raw suggestion(s) for Mia
+2026-11-17 22:31:53,835 INFO pawpal.rag: Retrieved for 'cat adult adult thyroid condition thyroid condition thyroid condition Thyroid meds meds daily care exercise feeding' (species=cat): ['cat_thyroid.md#thyroid-medication (17.44)', 'cat_thyroid.md#vet-follow-up (13.94)', 'cat_general.md#feeding-cats (8.98)', 'cat_general.md#grooming-cats (6.13)']
+2026-11-17 22:31:53,835 INFO pawpal.rag: Plan explained with 1 note(s), 1 cited
+2026-11-17 22:53:00,080 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 22:53:08,606 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 23:16:42,091 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 23:18:34,648 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 23:18:35,254 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 23:18:35,255 WARNING pawpal.rag: Rejected suggestion for Mia: Breakfast: duplicates an existing task
+2026-11-17 23:18:35,255 WARNING pawpal.rag: Rejected suggestion for Mia: Daily vitamin injection: cites unknown source 'vitamins.md#injections'
+2026-11-17 23:18:35,255 WARNING pawpal.rag: Rejected suggestion for Mia: Weekly weigh-in: duration 0 min is out of range
+2026-11-17 23:18:44,191 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 23:18:44,797 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 23:18:44,798 WARNING pawpal.rag: Rejected suggestion for Mia: Breakfast: duplicates an existing task
+2026-11-17 23:18:44,798 WARNING pawpal.rag: Rejected suggestion for Mia: Daily vitamin injection: cites unknown source 'vitamins.md#injections'
+2026-11-17 23:18:44,798 WARNING pawpal.rag: Rejected suggestion for Mia: Weekly weigh-in: duration 0 min is out of range
+2026-11-17 23:19:05,277 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 23:19:05,920 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-17 23:19:05,921 WARNING pawpal.rag: Rejected suggestion for Mia: Breakfast: duplicates an existing task
+2026-11-17 23:19:05,921 WARNING pawpal.rag: Rejected suggestion for Mia: Daily vitamin injection: cites unknown source 'vitamins.md#injections'
+2026-11-17 23:19:05,921 WARNING pawpal.rag: Rejected suggestion for Mia: Weekly weigh-in: duration 0 min is out of range
+2026-11-17 23:43:33,559 INFO pawpal.rag: Loaded 41 chunks from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge
+2026-11-17 23:43:33,562 WARNING pawpal.rag: AI disabled: The 'anthropic' package is not installed (pip install -r requirements.txt).
+2026-11-17 23:45:57,090 INFO pawpal.rag: Loaded 41 chunks from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge
+2026-11-17 23:45:57,091 WARNING pawpal.rag: AI disabled: The 'anthropic' package is not installed (pip install -r requirements.txt).
+2026-11-18 00:03:28,208 INFO pawpal.rag: Loaded 41 chunks from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge
+2026-11-18 00:03:29,092 WARNING pawpal.rag: AI disabled: No Anthropic API key found. Set ANTHROPIC_API_KEY to enable AI features.
+2026-11-18 00:03:29,094 INFO pawpal.rag: Loaded 27 pre-listed answers from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge/answers.json
+2026-11-18 00:03:29,240 INFO pawpal.rag: Retrieved for 'cat senior senior senior thyroid condition thyroid condition thyroid condition daily care exercise feeding' (species=cat): ['cat_thyroid.md#thyroid-medication (13.55)', 'cat_senior.md#when-a-cat-is-senior (11.02)', 'cat_thyroid.md#vet-follow-up (10.71)', 'cat_senior.md#grooming-help-for-senior-cats (10.10)', 'cat_senior.md#gentle-play-for-senior-cats (9.22)']
+2026-11-18 00:03:29,240 INFO pawpal.rag: Answer bank: 6 answer(s) fit Mia; suggesting ['cat-thyroid-meds', 'cat-weigh-in', 'senior-cat-play', 'senior-cat-brushing']
+2026-11-18 00:03:29,923 INFO pawpal.rag: Plan explained from pre-listed answers: 1 note(s), 1 cited
+2026-11-18 00:03:56,794 WARNING pawpal.rag: Rejected suggestion for Mia: Breakfast: duplicates an existing task
+2026-11-18 00:03:56,795 WARNING pawpal.rag: Rejected suggestion for Mia: Daily vitamin injection: cites unknown source 'vitamins.md#injections'
+2026-11-18 00:03:56,795 WARNING pawpal.rag: Rejected suggestion for Mia: Weekly weigh-in: duration 0 min is out of range
+2026-11-18 00:18:09,122 INFO pawpal.rag: Loaded 41 chunks from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge
+2026-11-18 00:18:09,124 WARNING pawpal.rag: AI disabled: The 'anthropic' package is not installed (pip install -r requirements.txt).
+2026-11-18 00:18:09,127 INFO pawpal.rag: Loaded 27 pre-listed answers from /Users/kostamiledimitrijevic/AI-101/applied-ai-system-final/knowledge/answers.json
+2026-11-18 00:18:38,329 INFO pawpal.rag: Retrieved for 'dog adult adult Thyroid meds Thyroid meds Thyroid meds daily care exercise feeding' (species=dog): ['dog_general.md#feeding-schedule (8.92)', 'dog_general.md#daily-exercise (8.51)', 'dog_general.md#mental-enrichment (7.44)', 'dog_general.md#grooming (6.01)', 'dog_diabetes.md#exercise-consistency (4.76)']
+2026-11-18 00:18:38,331 INFO pawpal.rag: Answer bank: 5 answer(s) fit Laura; suggesting ['dog-dinner', 'dog-evening-walk', 'dog-training', 'dog-brushing']

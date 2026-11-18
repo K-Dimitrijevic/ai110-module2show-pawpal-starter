@@ -1,0 +1,17 @@
+{
+  "name": "Jordan",
+  "available_minutes": 120,
+  "day_start": "08:00:00",
+  "max_task_minutes": null,
+  "pets": [
+    {
+      "name": "Laura",
+      "species": "dog",
+      "age": 2,
+      "special_needs": [
+        "Thyroid meds"
+      ],
+      "tasks": []
+    }
+  ]
+}

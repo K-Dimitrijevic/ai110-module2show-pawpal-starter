@@ -3,7 +3,19 @@ from datetime import date, time
 from pathlib import Path
 
 import streamlit as st
+from pawpal_rag import (
+    DISCLAIMER,
+    AnswerBank,
+    CareAdvisor,
+    PlanExplainer,
+    Retriever,
+    load_knowledge_base,
+    make_llm_client,
+    setup_logging,
+)
 from pawpal_system import Owner, Pet, Priority, Scheduler, Task
+
+setup_logging()
 
 CATEGORIES = ["walk", "feeding", "meds", "enrichment", "grooming", "other"]
 # session_state is lost when the browser is closed or refreshed, so the owner
@@ -23,6 +35,18 @@ def _task_status(task: Task, day: date) -> str:
 
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
+
+
+@st.cache_resource
+def get_ai():
+    """Load the guides, the pre-listed answers and the (optional) Claude client once per server process."""
+    chunks = load_knowledge_base()
+    llm, ai_error = make_llm_client()
+    return Retriever(chunks), AnswerBank.load(chunks), llm, ai_error
+
+
+retriever, bank, llm, ai_error = get_ai()
+SOURCES = ["Pre-listed answers (free, no API key)", "Claude (needs an API key)"]
 
 # Streamlit reruns this script on every interaction, so the Owner (with its pets
 # and tasks) lives in session_state and is only created on the first run.
@@ -202,12 +226,77 @@ else:
 
 st.divider()
 
+# --- AI Care Advisor (RAG) ---------------------------------------------------
+st.subheader("🤖 AI Care Advisor")
+st.caption(
+    "Looks up PawPal's pet-care guides for each pet's species, age, and special needs, and suggests "
+    "the care tasks it's missing, each with its source. Nothing is added until you approve it."
+)
+source_choice = st.radio("Suggestions come from", SOURCES, horizontal=True, key="advisor_source")
+use_claude = source_choice == SOURCES[1]
+if use_claude and llm is None:
+    st.info(f"Claude isn't available ({ai_error}) so PawPal will use the pre-listed answers.")
+active_llm = llm if use_claude else None
+
+if st.button("Get care suggestions", disabled=not owner.pets):
+    advisor = CareAdvisor(retriever, active_llm, bank)
+    with st.spinner("Reading the care guides..."):
+        st.session_state.advice = [advisor.advise(pet) for pet in owner.pets]
+
+advice_list = st.session_state.get("advice")
+if advice_list:
+    with st.form("review_suggestions"):
+        picks = []
+        for advice in advice_list:
+            st.markdown(f"**{advice.pet_name}**" + (f" · from {advice.source_mode}" if advice.source_mode else ""))
+            if advice.error and advice.suggestions:
+                st.info(advice.error)
+            elif advice.error:
+                st.warning(f"Couldn't get suggestions: {advice.error}")
+            elif not advice.suggestions:
+                st.caption("No new tasks suggested. The current tasks already cover the guidance found.")
+            for i, sug in enumerate(advice.suggestions):
+                t = sug.task
+                when = f" at {t.preferred_time:%H:%M}" if t.preferred_time else ""
+                required = ", required" if t.is_required else ""
+                label = (
+                    f"{t.title} ({t.category}, {t.duration_minutes} min, {t.priority.name.lower()}, "
+                    f"{t.frequency}{when}{required})"
+                )
+                if st.checkbox(label, key=f"pick_{advice.pet_name}_{i}"):
+                    picks.append(sug)
+                st.caption(f"{sug.reason} Source: {sug.source.label} · match confidence {sug.confidence:.0%}")
+            if advice.rejected:
+                st.caption(f"{len(advice.rejected)} suggestion(s) discarded by the safety checks.")
+        st.caption(DISCLAIMER)
+        col1, col2 = st.columns(2)
+        add = col1.form_submit_button("Add selected tasks", type="primary")
+        dismiss = col2.form_submit_button("Dismiss suggestions")
+    if add or dismiss:
+        for sug in picks if add else []:
+            pet = next(p for p in owner.pets if p.name == sug.pet_name)
+            if any(t.title.lower() == sug.task.title.lower() for t in pet.tasks):
+                continue  # already added on an earlier click
+            pet.add_task(sug.task)
+        st.session_state.advice_message = (
+            f"Added {len(picks)} suggested task(s). Generate the schedule to include them."
+            if add else "Suggestions dismissed."
+        )
+        st.session_state.pop("advice")
+        st.rerun()
+if "advice_message" in st.session_state:
+    st.success(st.session_state.pop("advice_message"))
+
+st.divider()
+
 # --- Schedule ----------------------------------------------------------------
 st.subheader("Today's Schedule")
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Generate schedule", type="primary", disabled=not owner.get_all_tasks()):
         st.session_state.plan = Scheduler(owner).generate_plan()
+        with st.spinner("Explaining the plan..."):
+            st.session_state.explanation = PlanExplainer(retriever, active_llm, bank).explain(st.session_state.plan, owner)
 with col2:
     if st.button("Reset everything"):
         DATA_FILE.unlink(missing_ok=True)
@@ -268,7 +357,15 @@ if plan is not None:
             [{"Pet": r["pet"], "Task": r["task"], "Minutes": r["minutes"], "Why": r["why"]} for r in skipped],
             hide_index=True,
         )
-    with st.expander("Full explanation"):
+    explanation = st.session_state.get("explanation")
+    has_sources = explanation is not None and explanation.mode != "rule-based"
+    if has_sources:
+        st.markdown(f"**Why this plan (with sources, from {explanation.mode})**")
+        st.markdown(explanation.to_markdown())
+        st.caption(DISCLAIMER)
+    if explanation is not None and explanation.error and use_claude:
+        st.caption(f"Claude's explanation was unavailable ({explanation.error}).")
+    with st.expander("Scheduler's rule-based reasoning" if has_sources else "Full explanation"):
         st.text(plan.explain())
     st.caption("Changed something? Click Generate schedule again to update the plan.")
 
